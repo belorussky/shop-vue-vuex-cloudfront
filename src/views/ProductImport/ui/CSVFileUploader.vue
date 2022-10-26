@@ -49,12 +49,29 @@ import Vue from 'vue';
 
 import axios from 'axios';
 
+axios.interceptors.response.use(
+	response => {
+		console.log('response', JSON.stringify(response));
+		return response;
+	},
+	error => {
+		const responseStatus = error.response.status;
+		if (responseStatus === 403 || responseStatus === 401) {
+			alert(error.response.data?.message);
+		}
+		return Promise.reject(error.response);
+	}
+);
+
 const fetchPresignedS3Url = (url: string, fileName: string) => {
 	return axios({
 		method: 'GET',
 		url,
 		params: {
 			name: encodeURIComponent(fileName),
+		},
+		headers: {
+			Authorization: `Basic ${localStorage.getItem('authorization_token')}`,
 		},
 	});
 };
